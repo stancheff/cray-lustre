@@ -650,7 +650,7 @@ retry:
 			GOTO(out_stop, rc);
 	}
 
-	tgt_vbr_obj_set(env, dob);
+	tgt_vbr_obj_data_set(env, dob, true);
 	rc = dt_trans_start(env, dt, th);
 	if (rc)
 		GOTO(out_stop, rc);
@@ -904,7 +904,7 @@ int mdt_object_fallocate(const struct lu_env *env, struct dt_device *dt,
 	if (rc)
 		GOTO(stop, rc);
 
-	tgt_vbr_obj_set(env, dob);
+	tgt_vbr_obj_data_set(env, dob, true);
 	rc = dt_trans_start(env, dt, th);
 	if (rc)
 		GOTO(stop, rc);
@@ -1094,7 +1094,7 @@ int mdt_object_punch(const struct lu_env *env, struct dt_device *dt,
 	if (rc)
 		GOTO(stop, rc);
 
-	tgt_vbr_obj_set(env, dob);
+	tgt_vbr_obj_data_set(env, dob, true);
 	rc = dt_trans_start(env, dt, th);
 	if (rc)
 		GOTO(stop, rc);
@@ -1645,7 +1645,7 @@ int mdt_data_version_get(struct tgt_session_info *tsi)
 		GOTO(out, rc = -EBADF);
 
 	/* Get version first */
-	version = dt_version_get(tsi->tsi_env, mdt_obj2dt(mo));
+	version = dt_data_version_get(tsi->tsi_env, mdt_obj2dt(mo));
 	if (version && version != -EOPNOTSUPP) {
 		repbody->mbo_valid |= OBD_MD_FLDATAVERSION;
 		/* re-use mbo_ioepoch to transfer version */
