@@ -851,28 +851,6 @@ EXTRA_KCFLAGS="$tmp_flags"
 ]) # LIBCFS_RHASHTABLE_INSERT_FAST
 
 #
-# LIBCFS_HAVE_NR_ZONE_WRITE_PENDING
-#
-# kernel v4.7-5966-g5a1c84b404a7
-# mm: remove reclaim and compaction retry approximations
-#
-AC_DEFUN([LIBCFS_SRC_HAVE_NR_ZONE_WRITE_PENDING], [
-	LB2_LINUX_TEST_SRC([nr_zone_write_pending_exists], [
-		#include <linux/mmzone.h>
-	],[
-		enum zone_stat_item item = NR_ZONE_WRITE_PENDING;
-		(void)item;
-	],[-Werror])
-])
-AC_DEFUN([LIBCFS_HAVE_NR_ZONE_WRITE_PENDING], [
-	AC_MSG_CHECKING([if NR_ZONE_WRITE_PENDING is available])
-	LB2_LINUX_TEST_RESULT([nr_zone_write_pending_exists], [
-		AC_DEFINE(HAVE_NR_ZONE_WRITE_PENDING, 1,
-			[NR_ZONE_WRITE_PENDING is still in use.])
-	])
-]) # LIBCFS_HAVE_NR_ZONE_WRITE_PENDING
-
-#
 # Kernel version 4.7-rc1 commit 8f6fd83c6c5ec66a4a70c728535ddcdfef4f3697
 # added 3rd arg to rhashtable_walk_init
 #
@@ -1841,6 +1819,29 @@ vmalloc_2args, [
 ]) # LIBCFS_VMALLOC_2ARGS
 
 #
+# LIBCFS_HAVE_NR_UNSTABLE_NFS
+#
+# kernel v5.8-rc1~201^2~75
+# mm/writeback: discard NR_UNSTABLE_NFS, use NR_WRITEBACK instead
+#
+AC_DEFUN([LIBCFS_HAVE_NR_UNSTABLE_NFS], [
+tmp_flags="$EXTRA_KCFLAGS"
+EXTRA_KCFLAGS="-Werror"
+LB_CHECK_COMPILE([if NR_UNSTABLE_NFS still in use],
+nr_unstable_nfs_exists, [
+	#include <linux/mm.h>
+
+	int i;
+],[
+	i = NR_UNSTABLE_NFS;
+],[
+	AC_DEFINE(HAVE_NR_UNSTABLE_NFS, 1,
+		[NR_UNSTABLE_NFS is still in use.])
+])
+EXTRA_KCFLAGS="$tmp_flags"
+]) # LIBCFS_HAVE_NR_UNSTABLE_NFS
+
+#
 # LIBCFS_HAVE_MMAP_LOCK
 #
 # kernel v5.8-rc1~83^2~24
@@ -2081,8 +2082,6 @@ param_set_uint_minmax, [
 ]) # LIBCFS_PARAM_SET_UINT_MINMAX
 
 AC_DEFUN([LIBCFS_PROG_LINUX_SRC], [
-	# 4.8
-	LIBCFS_SRC_HAVE_NR_ZONE_WRITE_PENDING
 	# 5.6
 	LIBCFS_SRC_HAVE_PROC_OPS
 	# 5.10
@@ -2095,8 +2094,6 @@ AC_DEFUN([LIBCFS_PROG_LINUX_SRC], [
 	AC_MSG_RESULT([done])
 ])
 AC_DEFUN([LIBCFS_PROG_LINUX_RESULTS], [
-	# 4.8
-	LIBCFS_HAVE_NR_ZONE_WRITE_PENDING
 	# 5.6
 	LIBCFS_HAVE_PROC_OPS
 	# 5.10
@@ -2349,6 +2346,7 @@ LIBCFS_TCP_SOCK_SET_KEEPCNT
 LIBCFS_HAVE_MMAP_LOCK
 LIBCFS_KERNEL_SETSOCKOPT
 LIBCFS_VMALLOC_2ARGS
+LIBCFS_HAVE_NR_UNSTABLE_NFS
 LIBCFS_SEC_RELEASE_SECCTX
 # 5.10
 LIBCFS_HAVE_KFREE_SENSITIVE
