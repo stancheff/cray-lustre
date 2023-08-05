@@ -1,7 +1,6 @@
 %ifarch x86_64
 %global mofed_version %(rpm -q --qf '%{VERSION}-%{RELEASE}' mlnx-ofa_kernel-devel)
 %endif
-%global kfabric_version %(rpm -q --qf '%{VERSION}-%{RELEASE}' cray-kfabric-devel)
 
 %define _version %(if test -s "%_sourcedir/_version"; then cat "%_sourcedir/_version"; else echo "UNKNOWN"; fi)
 %define _lnet_version %(echo "%{_version}" | awk -F . '{printf("%s.%s", $1, $2)}')
@@ -35,10 +34,8 @@ BuildRequires: libmount-devel
 %ifarch x86_64
 BuildRequires: mlnx-ofa_kernel-devel
 %endif
-BuildRequires: cray-kfabric-devel
 BuildRequires: flex
 BuildRequires: bison
-Requires: cray-kfabric-udev
 
 # Vendor specific requires/defines/etc.
 %if %{_vendor}=="redhat"
@@ -46,7 +43,6 @@ Requires: cray-kfabric-udev
 %global _with_linux --with-linux=/usr/src/kernels/%{kversion}
 %global requires_kmod_name kmod-%{lustre_name}
 %global requires_kmod_version %{version}
-Requires: (kmod-cray-kfabric or cray-kfabric-dkms)
 %ifarch x86_64
 Requires: (kmod-mlnx-ofa_kernel or mlnx-ofa_kernel-dkms)
 %endif
@@ -59,7 +55,6 @@ BuildRequires: redhat-rpm-config
 %global requires_kmod_name %{lustre_name}-kmp
 %global krequires %(echo %{kversion} | sed -e 's/\.x86_64$//' -e 's/\.i[3456]86$//' -e 's/-smp$//' -e 's/-bigsmp$//' -e 's/[-.]ppc64$//' -e 's/\.aarch64$//' -e 's/-default$//' -e 's/-%{flavor}//')
 %global requires_kmod_version %{version}_k%(echo %{krequires} | sed -r 'y/-/_/; s/^(2\.6\.[0-9]+)_/\\1.0_/;')
-Requires: (cray-kfabric-kmp or cray-kfabric-dkms)
 %ifarch x86_64
 Requires: (mlnx-ofa_kernel-kmp or mlnx-ofa_kernel-dkms)
 %endif
@@ -79,7 +74,6 @@ Compiled for kernel: %{kversion}
 %ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
-kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
 
 %package devel
 Group: Development/Libraries
@@ -95,7 +89,6 @@ Compiled for kernel: %{kversion}
 %ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
-kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
 
 %package lnet-headers
 Group: Development/Libraries
@@ -108,7 +101,6 @@ Compiled for kernel: %{kversion}
 %ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
-kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
 
 %package %{flavor}-lnet-devel
 Group: Development/Libraries
@@ -122,7 +114,6 @@ Compiled for kernel: %{kversion}
 %ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
-kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
 
 %package dkms
 Group: System/Filesystems
@@ -134,7 +125,6 @@ Requires: dkms >= 2.2.0.3-28.git.7c3e7c5
 Requires: gcc, make, perl
 Requires: libtool libyaml-devel zlib-devel
 Requires: libnl3-devel keyutils-devel
-Requires: cray-kfabric-devel
 Requires: automake
 Requires: pkg-config
 Requires: kernel-devel
@@ -207,13 +197,17 @@ else
 	O2IBPATH=yes
 fi
 
+WITH_KFI=""
+if [ -d /usr/src/kfabric/%{flavor} ]; then
+	WITH_KFI="--with-kfi=/usr/src/kfabric/%{flavor}"
+fi
+
 if [ "%reconfigure" == "1" -o ! -f %_builddir/%{name}-%{version}/Makefile ];then
 	%configure \
 		--disable-server \
 		--enable-client \
 		--with-kmp-moddir=%{kmoddir}/%{name} \
-		--with-o2ib=${O2IBPATH} \
-		--with-kfi=/usr/src/kfabric/%{flavor} \
+		--with-o2ib=${O2IBPATH} ${WITH_KFI} \
 		%{_with_linux} %{?_with_linux_obj}
 fi
 %{__make} %_smp_mflags
