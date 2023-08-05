@@ -1,8 +1,5 @@
-%if %{_arch} == "x86_64"
-%global arch_has_mofed 1
+%ifarch x86_64
 %global mofed_version %(rpm -q --qf '%{VERSION}-%{RELEASE}' mlnx-ofa_kernel-devel)
-%else
-%global arch_has_mofed 0
 %endif
 %global kfabric_version %(rpm -q --qf '%{VERSION}-%{RELEASE}' cray-kfabric-devel)
 
@@ -35,7 +32,7 @@ BuildRequires: systemd
 BuildRequires: libnl3-devel
 BuildRequires: keyutils-devel
 BuildRequires: libmount-devel
-%if %{arch_has_mofed} > 0
+%ifarch x86_64
 BuildRequires: mlnx-ofa_kernel-devel
 %endif
 BuildRequires: cray-kfabric-devel
@@ -50,7 +47,9 @@ Requires: cray-kfabric-udev
 %global requires_kmod_name kmod-%{lustre_name}
 %global requires_kmod_version %{version}
 Requires: (kmod-cray-kfabric or cray-kfabric-dkms)
+%ifarch x86_64
 Requires: (kmod-mlnx-ofa_kernel or mlnx-ofa_kernel-dkms)
+%endif
 BuildRequires: redhat-rpm-config
 %define mkconf_options %{nil}
 %else
@@ -61,7 +60,9 @@ BuildRequires: redhat-rpm-config
 %global krequires %(echo %{kversion} | sed -e 's/\.x86_64$//' -e 's/\.i[3456]86$//' -e 's/-smp$//' -e 's/-bigsmp$//' -e 's/[-.]ppc64$//' -e 's/\.aarch64$//' -e 's/-default$//' -e 's/-%{flavor}//')
 %global requires_kmod_version %{version}_k%(echo %{krequires} | sed -r 'y/-/_/; s/^(2\.6\.[0-9]+)_/\\1.0_/;')
 Requires: (cray-kfabric-kmp or cray-kfabric-dkms)
+%ifarch x86_64
 Requires: (mlnx-ofa_kernel-kmp or mlnx-ofa_kernel-dkms)
+%endif
 %define mkconf_options -k updates
 %endif
 
@@ -75,7 +76,7 @@ Requires: %{requires_kmod_name} = %{requires_kmod_version}
 %description
 Userspace tools and files for the Lustre filesystem.
 Compiled for kernel: %{kversion}
-%if %{arch_has_mofed} > 0
+%ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
 kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
@@ -91,7 +92,7 @@ Summary: Cray Lustre Header files
 Development files for building against Lustre library.
 Includes headers, dynamic, and static libraries.
 Compiled for kernel: %{kversion}
-%if %{arch_has_mofed} > 0
+%ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
 kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
@@ -104,7 +105,7 @@ Summary: Cray Lustre Network Header files
 %description lnet-headers
 Cray Lustre Network Header files
 Compiled for kernel: %{kversion}
-%if %{arch_has_mofed} > 0
+%ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
 kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
@@ -118,7 +119,7 @@ Summary: Cray Lustre Network kernel flavor specific devel files
 Kernel flavor specific development files for building against Lustre
 Network (LNet)
 Compiled for kernel: %{kversion}
-%if %{arch_has_mofed} > 0
+%ifarch x86_64
 ko2iblnd compiled against: mlnx-ofa_kernel-devel-%{mofed_version}
 %endif
 kkfilnd compiled against: cray-kfabric-devel-%{kfabric_version}
